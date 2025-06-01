@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AI Analytical Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-doughnutlabel@1.0.3/dist/chartjs-plugin-doughnutlabel.min.js"></script>
+
+</head>
+<body class="bg-white text-gray-900 font-sans">
+  <div class="p-2 max-w-7xl mx-auto">
+    <header class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold">AI Analytical Dashboard</h1>
+      <nav class="space-x-4 text-sm text-gray-600">
+        <span>Dashboard</span>
+        <span>Patients</span>
+        <span>Reports</span>
+        <span>Settings</span>
+      </nav>
+    </header>
+
+    <div class="mb-4">
+      <label for="patient" class="block text-sm font-medium">Select Patient</label>
+      <select id="patient" class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm">
+        <option value="Normal">Normal</option>
+        <option value="Anemia">Anemia</option>
+        <option value="Infection Risk">Infection Risk</option>
+        <option value="Cardiovascular Risk">Cardiovascular Risk</option>
+        <option value="Leukemia Risk">Leukemia Risk</option>
+      </select>
+    </div>
+
+    <div class="grid grid-cols-4 gap-4 mb-8">
+      <div class="bg-gray-100 p-4 rounded text-center">
+        <div class="text-sm font-medium">Anemia</div>
+        <div id="anemiaRisk" class="text-2xl font-bold">--%</div>
+      </div>
+      <div class="bg-gray-100 p-4 rounded text-center">
+        <div class="text-sm font-medium">Infection</div>
+        <div id="infectionRisk" class="text-2xl font-bold">--%</div>
+      </div>
+      <div class="bg-gray-100 p-4 rounded text-center">
+        <div class="text-sm font-medium">Cardiovascular Disease</div>
+        <div id="cardioRisk" class="text-2xl font-bold">--%</div>
+      </div>
+      <div class="bg-gray-100 p-4 rounded text-center">
+        <div class="text-sm font-medium">Leukemia</div>
+        <div id="leukemiaRisk" class="text-2xl font-bold">--%</div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-4 gap-4 mb-2 items-center">
+      <div class="text-center">
+        <div class="text-sm font-medium">Anemia Risk</div>
+        <div id="anemiaCircle" class="text-2xl font-bold">--%</div>
+        <div id="anemiaCircleBG" class="w-24 h-24 mx-auto mt-2 rounded-full bg-gray-100"></div>
+      </div>
+      <div class="text-center">
+        <div class="text-sm font-medium">Infection Risk</div>
+        <div id="infectionCircle" class="text-2xl font-bold">--%</div>
+        <div id="infectionCircleBG" class="w-24 h-24 mx-auto mt-2 rounded-full bg-gray-100"></div>
+      </div>
+      <div class="text-center">
+        <div class="text-sm font-medium">Cardiovascular Risk</div>
+        <div id="cardioCircle" class="text-2xl font-bold">--%</div>
+        <div id="cardioCircleBG" class="w-24 h-24 mx-auto mt-2 rounded-full bg-gray-100"></div>
+      </div>
+      <div class="text-sm">
+        <h2 class="text-lg font-semibold mb-2">Clinical Recommendations</h2>
+        <p id="recommendations" class="text-gray-700 text-sm">Select a patient to view recommendations.</p>
+      </div>
+    </div>
+
+    <div>
+  <h3 class="text-md font-semibold mb-2">CBC Input Parameters</h3>
+  <div class="grid grid-cols-2 gap-4">
+    <!-- Left table -->
+    <div>
+      <table class="w-full text-sm border border-collapse" id="cbcTableLeft">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="border px-2 py-1">Parameter</th>
+            <th class="border px-2 py-1">Value</th>
+            <th class="border px-2 py-1">Unit</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Right table -->
+    <div>
+      <table class="w-full text-sm border border-collapse" id="cbcTableRight">
+        <thead>
+          <tr class="bg-gray-200">
+            <th class="border px-2 py-1">Parameter</th>
+            <th class="border px-2 py-1">Value</th>
+            <th class="border px-2 py-1">Unit</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+    
+  </div>
+
+  <script>
+
+    
+  const patientData = {
+    "Normal": {
+      "WBC": 7.0, "Lymphocytes": 30, "Neutrophils": 55, "RBC": 4.5,
+      "Hemoglobin": 14.0, "Hematocrit": 42, "Platelets": 250, "NLR": 1.83,
+      "MCV": 85, "MCH": 29, "MCHC": 33, "RDW": 13.5, "MPV": 9.8,
+      "PDW": 14.2, "PCT": 0.25, "Basophils": 0.5, "Eosinophils": 2.5,
+      "Monocytes": 6.0, "LymphsAbs": 2.0, "NeutroAbs": 4.0,
+      "BasoAbs": 0.05, "EosAbs": 0.2
+    },
+    "Anemia": {
+      "WBC": 6.0, "Lymphocytes": 28, "Neutrophils": 56, "RBC": 3.5,
+      "Hemoglobin": 9.0, "Hematocrit": 30, "Platelets": 260, "NLR": 2.0,
+      "MCV": 75, "MCH": 24, "MCHC": 30, "RDW": 15.5, "MPV": 9.0,
+      "PDW": 13.0, "PCT": 0.22, "Basophils": 0.4, "Eosinophils": 2.1,
+      "Monocytes": 5.5, "LymphsAbs": 1.8, "NeutroAbs": 3.5,
+      "BasoAbs": 0.03, "EosAbs": 0.15
+    },
+    "Infection Risk": {
+      "WBC": 14.0, "Lymphocytes": 17, "Neutrophils": 76, "RBC": 4.9,
+      "Hemoglobin": 13.2, "Hematocrit": 40, "Platelets": 210, "NLR": 4.2,
+      "MCV": 87, "MCH": 30, "MCHC": 33.5, "RDW": 13.2, "MPV": 9.7,
+      "PDW": 14.1, "PCT": 0.24, "Basophils": 0.6, "Eosinophils": 2.3,
+      "Monocytes": 5.8, "LymphsAbs": 1.5, "NeutroAbs": 5.8,
+      "BasoAbs": 0.04, "EosAbs": 0.22
+    },
+    "Cardiovascular Risk": {
+      "WBC": 8.5, "Lymphocytes": 20, "Neutrophils": 68, "RBC": 4.4,
+      "Hemoglobin": 13.8, "Hematocrit": 41, "Platelets": 230, "NLR": 5.2,
+      "MCV": 88, "MCH": 30, "MCHC": 34, "RDW": 13.0, "MPV": 10.0,
+      "PDW": 13.9, "PCT": 0.26, "Basophils": 0.3, "Eosinophils": 1.5,
+      "Monocytes": 6.2, "LymphsAbs": 1.7, "NeutroAbs": 5.2,
+      "BasoAbs": 0.02, "EosAbs": 0.18
+    },
+    "Leukemia Risk": {
+      "WBC": 21.0, "Lymphocytes": 9, "Neutrophils": 81, "RBC": 4.3,
+      "Hemoglobin": 12.5, "Hematocrit": 38, "Platelets": 190, "NLR": 8.1,
+      "MCV": 89, "MCH": 31, "MCHC": 34, "RDW": 14.0, "MPV": 9.6,
+      "PDW": 14.5, "PCT": 0.28, "Basophils": 0.9, "Eosinophils": 3.0,
+      "Monocytes": 7.0, "LymphsAbs": 1.0, "NeutroAbs": 6.8,
+      "BasoAbs": 0.06, "EosAbs": 0.3
+    }
+  };
+  const unitMap = {
+  "WBC": "x10⁹/L", "RBC": "x10¹²/L", "Hemoglobin": "g/dL", "Hematocrit": "%",
+  "Platelets": "x10⁹/L", "NLR": "-", "MCV": "fL", "MCH": "pg", "MCHC": "g/dL",
+  "RDW": "%", "MPV": "fL", "PDW": "%", "PCT": "%", "Basophils": "%",
+  "Eosinophils": "%", "Monocytes": "%", "Lymphocytes": "%", "LymphsAbs": "x10⁹/L",
+  "Neutrophils": "%", "NeutroAbs": "x10⁹/L", "BasoAbs": "x10⁹/L", "EosAbs": "x10⁹/L"
+};
+
+function renderCBCTable(data) {
+  const tbody = document.getElementById('cbcTableBody');
+  tbody.innerHTML = ''; // Clear previous rows
+  Object.entries(data).forEach(([key, value]) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="border px-2 py-1">${key}</td>
+      <td class="border px-2 py-1">${value}</td>
+      <td class="border px-2 py-1">${unitMap[key] || '-'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+  function getColorClass(risk) {
+    if (risk >= 75) return 'bg-red-300';
+    if (risk >= 50) return 'bg-yellow-300';
+    return 'bg-green-300';
+  }
+
+  document.getElementById('patient').addEventListener('change', async function () {
+    const selected = this.value;
+    const data = patientData[selected];
+    renderCBCTable(data);
+
+    const response = await fetch("http://127.0.0.1:8000/predict", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data)
+    });
+
+    const result = await response.json();
+
+    // Update risk boxes
+    document.getElementById('anemiaRisk').innerText = result.anemia_risk + "%";
+    document.getElementById('infectionRisk').innerText = result.infection_risk + "%";
+    document.getElementById('cardioRisk').innerText = result.cardiovascular_risk + "%";
+    document.getElementById('leukemiaRisk').innerText = result.leukemia_risk + "%";
+
+    // Update risk circles
+    document.getElementById('anemiaCircle').innerText = result.anemia_risk + "%";
+    document.getElementById('infectionCircle').innerText = result.infection_risk + "%";
+    document.getElementById('cardioCircle').innerText = result.cardiovascular_risk + "%";
+
+    // Circle color changes
+    document.getElementById('anemiaCircleBG').className = "w-24 h-24 mx-auto mt-2 rounded-full " + getColorClass(result.anemia_risk);
+    document.getElementById('infectionCircleBG').className = "w-24 h-24 mx-auto mt-2 rounded-full " + getColorClass(result.infection_risk);
+    document.getElementById('cardioCircleBG').className = "w-24 h-24 mx-auto mt-2 rounded-full " + getColorClass(result.cardiovascular_risk);
+
+    // Recommendations
+    const recs = [];
+    if (result.anemia_risk > 75) recs.push("⚠️ Anemia Warning: Retest Hemoglobin.");
+    if (result.infection_risk > 70) recs.push("⚠️ Possible Infection Detected.");
+    if (result.cardiovascular_risk > 80) recs.push("⚠️ Cardiovascular Risk Alert.");
+    if (result.leukemia_risk > 80) recs.push("⚠️ Leukemia Risk Detected.");
+
+    document.getElementById('recommendations').innerText =
+      recs.length ? recs.join("\n") : "✅ No immediate concerns detected.";
+  });
+
+  function renderCBCTable(data) {
+  const entries = Object.entries(data);
+  const leftTable = document.querySelector('#cbcTableLeft tbody');
+  const rightTable = document.querySelector('#cbcTableRight tbody');
+  leftTable.innerHTML = '';
+  rightTable.innerHTML = '';
+
+  entries.forEach(([key, value], index) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="border px-2 py-1">${key}</td>
+      <td class="border px-2 py-1">${value}</td>
+      <td class="border px-2 py-1">${unitMap[key] || '-'}</td>
+    `;
+    if (index < 11) {
+      leftTable.appendChild(tr);
+    } else {
+      rightTable.appendChild(tr);
+    }
+  });
+}
+
+</script>
+
+</body>
+</html>
